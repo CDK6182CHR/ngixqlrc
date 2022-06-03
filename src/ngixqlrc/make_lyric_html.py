@@ -11,9 +11,11 @@ import re
 
 
 def lyric_html(triungkox, ghenhdaih, outfile, outlower):
+    """
+    2022.06.03修订：中文歌词中把竖线抹了
+    """
 
     root = etree.Element('p')
-
 
     fp1 = open(triungkox, 'r', encoding='utf-8', errors='ignore')
     fp2 = open(ghenhdaih, 'r', encoding='utf-8', errors='ignore')
@@ -50,7 +52,7 @@ def lyric_html(triungkox, ghenhdaih, outfile, outlower):
         tr = etree.SubElement(table, 'tr')
         for t in line2:
             t:str
-            if not t.isspace():
+            if not t.isspace() and t != '|':
                 td = etree.SubElement(tr, 'td', E.CLASS('HanhzihCell'), align='center')
                 td.text = t
         etree.SubElement(root, 'p')
