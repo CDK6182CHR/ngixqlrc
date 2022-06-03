@@ -113,7 +113,7 @@ if __name__ == '__main__':
     triungkox = p.triungkox[0]
     ghenhdaih = p.ghenhdaih[0]
     outfile = p.outfile[0]
-    outlower = p.lower[0] if p.lower is not None else None
+    outlower = p.lower if p.lower is not None else None
 
     lyric_html(triungkox, ghenhdaih, outfile, outlower)    
 

@@ -238,6 +238,9 @@ def main(cn_file, latin_file, output_root):
     if not os.path.exists(output_root):
         os.mkdir(output_root)
 
+    etree.Comment('本序列文件由ngixqlrc生成')
+    etree.Comment('https://github.com/CDK6182CHR/ngixqlrc')
+
     # prepare xml header ...
     xeml = etree.Element('xmeml',{'version':'5'})
     seq = etree.SubElement(xeml, 'sequence', {'id':'XML字幕序列'})
