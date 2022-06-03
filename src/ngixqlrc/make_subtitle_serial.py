@@ -103,18 +103,19 @@ def generate_line_html(cont_cn, cont_latin):
         }
 
         .HanhzihCell {
-            font-size: 4em;
+            font-size: 6em;
             font-family: '华文中宋';
             color:rgb(0,0,0);
-            /* -webkit-text-stroke: 2px #000; */
+            text-shadow: 0.05em 0.05em 0.1em #aaa;
         }
 
         .PhrengqimCell {
-            font-size: 2.5em;
+            font-size: 4em;
             font-family: 'Times New Roman', Times, serif;
             color: rgb(0,0,0);
             /* -webkit-text-stroke: 1px #000; */
             padding: 5px;
+            text-shadow: 0.05em 0.05em 0.1em #aaa;
         }
         """
 
@@ -135,19 +136,19 @@ def generate_line_html(cont_cn, cont_latin):
     
     return html
 
+__global_config = {
+    'width':1500,
+    'height':500,
+    'timebase':30,
+}
+
 
 __imgkit_config = {
     'transparent':None,
     'format':'png',
     'quality':100,
-    'width':1500,
-    'height':500
-}
-
-__global_config = {
-    'width':1500,
-    'height':1000,
-    'timebase':30,
+    'width':__global_config['width'],
+    'height':__global_config['height']
 }
 
 
@@ -221,11 +222,6 @@ def generate_clip_item(imgname,cont_cn, imgfullname, timebase,
     return item
 
 
-"""
-
-"""
-
-
 def proc_item(cont_cn, cont_latin, tm_start, tm_end, n, output_root, trk):
     print(n, cont_cn, cont_latin)
 
@@ -239,20 +235,22 @@ def proc_item(cont_cn, cont_latin, tm_start, tm_end, n, output_root, trk):
 
 
 def main(cn_file, latin_file, output_root):
+    if not os.path.exists(output_root):
+        os.mkdir(output_root)
 
     # prepare xml header ...
     xeml = etree.Element('xmeml',{'version':'5'})
     seq = etree.SubElement(xeml, 'sequence', {'id':'XML字幕序列'})
     seq.append(etree.fromstring('<updatebehavior>add</updatebehavior>'))
-    seq.append(etree.fromstring('<name>XML字幕序列_25.0p_Subtitle</name>'))
+    seq.append(etree.fromstring('<name>XML字幕序列</name>'))
     rate = etree.SubElement(seq, 'rate')
     etree.SubElement(rate, 'ntsc').text = 'FALSE'
     etree.SubElement(rate, 'timebase').text = str(__global_config['timebase'])
 
     tc = etree.SubElement(seq, 'timecode')
     tc.append(copy.deepcopy(rate))
-    tc.append(etree.fromstring('<string>01:00:00:00</string>'))
-    tc.append(etree.fromstring('  <frame>90000</frame>'))
+    tc.append(etree.fromstring('<string>00:00:00:00</string>'))
+    tc.append(etree.fromstring('<frame>0</frame>'))
     tc.append(etree.fromstring('<source>source</source>'))
     tc.append(etree.fromstring('<displayformat>NDF</displayformat>'))
     etree.SubElement(seq, 'width').text = str(__global_config['width'])
@@ -320,14 +318,26 @@ def main(cn_file, latin_file, output_root):
 
 if __name__ == '__main__':
     ...
-    # generate_line_img(
-    #     '又一三月|浓愁共清风盈袖',
-    #     'iuh qjit sam ngyat nryung zriu gyungh chieng piung jeng zsiuh',
-    #     'img/1.png'
-    # )
-    # generate_line_img(
-    #     '未觉经身处腐草生芳华瘦',
-    #     'myoih kruk keng sjin chjoh Byox chaux srang phyang ghrua sriuh'.lower(),
-    #     'img/2.png'
-    # )
-    main('汉字-对照版.lrc','中古-对照版.txt','serial_out')
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser('根据歌词文件生成标音的Premiere序列')
+    parser.add_argument('triungkox', help='注音文件，lrc或txt')
+    parser.add_argument('ghenhdaih', help='汉字歌词文件，lrc或txt')
+    parser.add_argument('output_root', help='输出的文件夹名')
+    parser.add_argument('--width', dest='width', type=int, 
+            default=1500, required=False, help='输出图幅宽度')
+    parser.add_argument('--height',  dest='height', type=int, 
+            default=500, required=False, help='输出图幅高度')
+    parser.add_argument('--timebase', dest='timebase', type=int, 
+            default=30, required=False, help='输出序列的帧速率 fps')
+
+    p = parser.parse_args(sys.argv[1:])
+
+    __global_config['height'] = __imgkit_config['height'] = p.height
+    __global_config['width'] = __imgkit_config['width'] = p.width
+    __global_config['timebase'] = p.timebase
+
+    print(__global_config)
+
+    main(p.ghenhdaih, p.triungkox, p.output_root)
