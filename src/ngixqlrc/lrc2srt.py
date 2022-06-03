@@ -72,9 +72,25 @@ def lrc_to_srt(src:str,dst:str,translate:int=0):
 
 
 if __name__ == '__main__':
-    src = r'中古歌词wyy时间线.lrc'
-    dst = r'中古歌词.srt'
-    translate = 0
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(description='Convert LRC file to subtitle file (*.srt)')
+    parser.add_argument('src', nargs=1, type=str, help='source *.lrc file')
+    parser.add_argument('dst', nargs='?', default=None,
+         type=str, help='output *.srt file, default as <src>.srt')
+    parser.add_argument('-t', '--translate', dest='translate', nargs=1, default=0,
+        type=int, required=False, 
+        help='translate the timeline by given value (in seconds)')
+    
+    p = parser.parse_args(sys.argv[1:])
+    src = p.src[0]
+    dst = p.dst
+    if dst is None:
+        dst = src+'.srt'
+    else:
+        dst = dst[0]
+    translate = p.translate
+    
     lrc_to_srt(src, dst, translate)
 
 
