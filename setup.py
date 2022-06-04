@@ -20,5 +20,7 @@ setup(
     requires=[
         'lxml',
         'imgkit',
+        'MarkdownSuperscript',
+        'markdown',
     ]
 )

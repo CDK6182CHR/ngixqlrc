@@ -6,7 +6,7 @@
 
 ## 安装
 
-本程序需要使用Python 3.9或以上版本，使用完整功能需要安装`lxml` `imgkit` 第三方库，还需要安装[wkhtmltopdf](https://wkhtmltopdf.org/)并将其添加到`PATH`环境变量中。
+本程序需要使用Python 3.9或以上版本，使用完整功能需要安装`lxml` `imgkit`  `markdown` `MarkdownSuperscript` 第三方库，还需要安装[wkhtmltopdf](https://wkhtmltopdf.org/)并将其添加到`PATH`环境变量中。
 
 因为很可能需要修改源代码来改配置，故建议使用开发者模式安装，在当前目录下执行：
 
@@ -68,7 +68,7 @@ python -m ngixqlrc.make_subtitle_serial 人间入画-中古-对照版.txt 人间
 
 注：这里PNG图片的生成是先生成html，再用`imgkit`（实质上是调用`wkhtmltoimage`）转换成图片的。若要修改字体、字体大小、阴影等，可以修改写入的css内容。
 
-使用本程序生成的样例视频：（待更新）
+使用本程序生成的样例视频：https://www.bilibili.com/video/BV1eg411d7Ab
 
 ## 关于
 
