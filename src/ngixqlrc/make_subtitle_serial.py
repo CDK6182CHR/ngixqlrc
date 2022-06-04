@@ -4,19 +4,10 @@ from lxml.html import builder as E
 import re
 import os
 import copy
-
+from .common import lrc_time_to_secs
+from .html_commom import generate_html_table, parse_config
 
 __tmmark_reg = re.compile(r'^\[([0-9:.]{1,})\]')
-
-
-def lrc_time_to_secs(mark:str)->float:
-    """
-    lrc的时间戳转换为秒数。入参不含方括号。
-    """
-    sp1 = mark.split(':')
-    res = int(sp1[0])*60
-    res += float(sp1[1])
-    return res
 
 
 def sec_to_timestamp(sec:float, timebase:int)->int:
@@ -24,30 +15,6 @@ def sec_to_timestamp(sec:float, timebase:int)->int:
     秒数转时间戳。
     """
     return int(round(sec/(1.0/timebase)))
-
-
-def generate_line_elements(line_cn, line_latin):
-    """
-    returns the table element
-    """
-    table = etree.Element('table',E.CLASS('LyricTable'))
-
-    tr = etree.SubElement(table, 'tr')
-    prengqim = line_latin.split()
-    for t in prengqim:
-        # td = etree.SubElement(tr, 'td', E.CLASS('PhrengqimCell'), align='center')
-        td = etree.fromstring(f'<td class="PhrengqimCell">{t}</td>')
-        td.attrib['align'] = 'center'
-        tr.append(td)
-    
-    # 汉字行：逐字，但忽略空格
-    tr = etree.SubElement(table, 'tr')
-    for t in line_cn:
-        t:str
-        if not t.isspace():
-            td = etree.SubElement(tr, 'td', E.CLASS('HanhzihCell'), align='center')
-            td.text = t
-    return table
 
 
 def generate_line_html(cont_cn, cont_latin):
@@ -88,7 +55,7 @@ def generate_line_html(cont_cn, cont_latin):
     root = etree.Element('p')
 
     for cn_line, lt_line in zip(cn_lines, lt_lines):
-        table = generate_line_elements(cn_line,lt_line)
+        table = generate_html_table(cn_line,lt_line)
         root.append(table)
         etree.SubElement(root, 'p')
 
@@ -185,7 +152,7 @@ def __common_item_format():
 def generate_clip_item(imgname,cont_cn, imgfullname, timebase, 
     tm_start, tm_end):
     item = etree.Element('clipitem', {'id': imgname})
-    item.append(etree.Comment(cont_cn))
+    item.append(etree.Comment(cont_cn.replace('-','_')))
     etree.SubElement(item, 'name').text = imgname
     etree.SubElement(item, 'duration').text = '3251'
     rate = etree.SubElement(item,'rate')
@@ -324,7 +291,7 @@ if __name__ == '__main__':
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser('根据歌词文件生成标音的Premiere序列')
+    parser = argparse.ArgumentParser(description='根据歌词文件生成标音的Premiere序列')
     parser.add_argument('triungkox', help='注音文件，lrc或txt')
     parser.add_argument('ghenhdaih', help='汉字歌词文件，lrc或txt')
     parser.add_argument('output_root', help='输出的文件夹名')
@@ -334,6 +301,10 @@ if __name__ == '__main__':
             default=500, required=False, help='输出图幅高度')
     parser.add_argument('--timebase', dest='timebase', type=int, 
             default=30, required=False, help='输出序列的帧速率 fps')
+    parser.add_argument('--use-md', '-m', dest='use_md', type=int, 
+        required=False, default=0, help='是否使用markdown解析注音文本')
+    parser.add_argument('--capital-red', '-r', dest='capital_red', type=int, 
+        required=False, default=0, help='是否将注音中的大写字母转换为红色文本')
 
     p = parser.parse_args(sys.argv[1:])
 
@@ -342,5 +313,7 @@ if __name__ == '__main__':
     __global_config['timebase'] = p.timebase
 
     print(__global_config)
+
+    parse_config(p)
 
     main(p.ghenhdaih, p.triungkox, p.output_root)

@@ -8,6 +8,7 @@ from lxml import etree
 from lxml.html import builder as E
 import re
 
+from .html_commom import generate_html_table, parse_config
 
 
 def lyric_html(triungkox, ghenhdaih, outfile, outlower):
@@ -37,24 +38,8 @@ def lyric_html(triungkox, ghenhdaih, outfile, outlower):
             continue
         print(line1, line2)
         # 中古拼音行：按空格分划
-        table = etree.SubElement(root, 'table', E.CLASS('LyricTable'))
-        tr = etree.SubElement(table, 'tr')
-        prengqim = line1.split()
-        for t in prengqim:
-            if caps:=re.findall(cap_reg, t):
-                for i in caps:
-                    t=t.replace(i, f'<font color="red">{i.lower()}</font>')
-            # td = etree.SubElement(tr, 'td', E.CLASS('PhrengqimCell'), align='center')
-            td = etree.fromstring(f'<td class="PhrengqimCell">{t}</td>')
-            td.attrib['align'] = 'center'
-            tr.append(td)
-        # 汉字行：逐字，但忽略空格
-        tr = etree.SubElement(table, 'tr')
-        for t in line2:
-            t:str
-            if not t.isspace() and t != '|':
-                td = etree.SubElement(tr, 'td', E.CLASS('HanhzihCell'), align='center')
-                td.text = t
+        table = generate_html_table(line2, line1)
+        root.append(table)
         etree.SubElement(root, 'p')
     fp1.close()
     fp2.close()
@@ -65,7 +50,16 @@ def lyric_html(triungkox, ghenhdaih, outfile, outlower):
             border-style: double;
         }
         .HanhzihCell{
-            font-size: 1.5em;
+            font-size: 1.8em;
+            font-family: 华文中宋;
+        }
+        .PhrengqimCell{
+            font-family: 'Times new Roman';
+            padding-left: 0.1em;
+            padding-right: 0.1em;
+        }
+        .PhrengqimCell p{
+            margin: 0;
         }
         """
 
@@ -87,7 +81,7 @@ def lyric_html(triungkox, ghenhdaih, outfile, outlower):
     with etree.htmlfile(outfile, encoding='utf-8') as xf:
         xf.write_doctype('<!DOCTYPE HTML>')
 
-        xf.write(html)
+        xf.write(html, pretty_print=True)
 
 
     # 2022.05.31: also add lower-case version
@@ -107,13 +101,20 @@ if __name__ == '__main__':
     parser.add_argument('outfile', nargs=1, help='输出的html文件')
     parser.add_argument('lower', nargs='?', default=None, 
         help='（可选）输出的纯小写注音文件，如不指定则不生成')
+    parser.add_argument('--use-md', '-m', dest='use_md', type=int, 
+        required=False, default=0, help='是否使用markdown解析注音文本')
+    parser.add_argument('--capital-red', '-r', dest='capital_red', type=int, 
+        required=False, default=1, help='是否将注音中的大写字母转换为红色文本')
 
     p = parser.parse_args(sys.argv[1:])
+    print(p, type(p))
 
     triungkox = p.triungkox[0]
     ghenhdaih = p.ghenhdaih[0]
     outfile = p.outfile[0]
-    outlower = p.lower if p.lower is not None else None
+    outlower = p.lower
+
+    parse_config(p)
 
     lyric_html(triungkox, ghenhdaih, outfile, outlower)    
 
