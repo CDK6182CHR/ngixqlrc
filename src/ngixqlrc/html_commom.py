@@ -7,12 +7,15 @@ from mdx_superscript import SuperscriptExtension
 
 html_config = {
     'capital_red': True,
-    'use_md': False
+    'use_md': False,
+    'center': False,
 }
 
 def parse_config(p):
     html_config['capital_red'] = bool(p.capital_red)
     html_config['use_md'] = bool(p.use_md)
+    html_config['center'] = p.center
+
 
 cap_reg = re.compile(r'[A-Z]{1,}')
 
@@ -23,6 +26,8 @@ def generate_html_table(line_cn, line_latin):
     合并生成html页面和字幕的两种处理环境。
     """
     table = etree.Element('table',E.CLASS('LyricTable'))
+    if html_config['center']:
+        table.attrib['align'] = 'center'
 
     tr = etree.SubElement(table, 'tr')
     prengqim = line_latin.split()

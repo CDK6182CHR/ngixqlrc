@@ -301,10 +301,10 @@ if __name__ == '__main__':
             default=500, required=False, help='输出图幅高度')
     parser.add_argument('--timebase', dest='timebase', type=int, 
             default=30, required=False, help='输出序列的帧速率 fps')
-    parser.add_argument('--use-md', '-m', dest='use_md', type=int, 
-        required=False, default=0, help='是否使用markdown解析注音文本')
-    parser.add_argument('--capital-red', '-r', dest='capital_red', type=int, 
-        required=False, default=0, help='是否将注音中的大写字母转换为红色文本')
+    parser.add_argument('--use-md', '-m', action='store_true', dest='use_md', help='是否使用markdown解析注音文本')
+    parser.add_argument('--capital-red', '-r',  action='store_true', dest='capital_red', 
+            help='是否将注音中的大写字母转换为红色文本')
+    parser.add_argument('--center', '-c', action='store_true', help='表格是否居中')
 
     p = parser.parse_args(sys.argv[1:])
 
