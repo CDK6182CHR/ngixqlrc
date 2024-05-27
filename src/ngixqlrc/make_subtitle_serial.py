@@ -254,9 +254,10 @@ def main(cn_file, latin_file, output_root):
             tmmark = tmmark_r.groups()[0]
             line2 = line2.lstrip(tmmark_r.group())
         if not line1 or not line2:
-            fp1_last, fp2_last = line1, line2
-            tmmark_last = tmmark
-            continue
+            pass    # 2024.05.28: just process empty line as normal one?
+            # fp1_last, fp2_last = line1, line2
+            # tmmark_last = tmmark
+            # continue
         if tmmark_last:
             proc_item(fp2_last, fp1_last, lrc_time_to_secs(tmmark_last), 
             lrc_time_to_secs(tmmark), n, output_root, trk)
