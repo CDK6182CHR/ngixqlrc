@@ -17,7 +17,7 @@ def sec_to_timestamp(sec:float, timebase:int)->int:
     return int(round(sec/(1.0/timebase)))
 
 
-def generate_line_html(cont_cn, cont_latin):
+def generate_line_html(cont_cn, cont_latin, extra_css=None):
     """
     :param: cont_cn  中文歌词，输入文件的一行，不含时间戳。以逐个字符分解到单元格。
     :param: cont_latin  歌词注音，其实不一定只能是拉丁字母。以空格分解到单元格。
@@ -85,6 +85,17 @@ def generate_line_html(cont_cn, cont_latin):
             text-shadow: 0.05em 0.05em 0.1em #aaa;
         }
         """
+    body = E.BODY(
+        #  E.H1(E.CLASS("heading"), "Top News"),
+        #  E.P("World News only on this page", style="font-size: 200%"),
+        #  "Ah, and here's some more text, by the way.",
+        root,
+        css
+    )
+    if extra_css:
+        css_extra = E.STYLE(type='text/css')
+        css_extra.text = extra_css
+        body.append(css_extra)
 
     html = E.HTML(
     E.HEAD(
@@ -92,13 +103,7 @@ def generate_line_html(cont_cn, cont_latin):
         #  E.TITLE("Best Page Ever")
         E.META(charset='utf-8')
     ),
-    E.BODY(
-        #  E.H1(E.CLASS("heading"), "Top News"),
-        #  E.P("World News only on this page", style="font-size: 200%"),
-        #  "Ah, and here's some more text, by the way.",
-        root,
-        css
-    )
+    body,
     )
     
     return html
@@ -119,14 +124,14 @@ __imgkit_config = {
 }
 
 
-def generate_line_img(cont_cn, cont_latin, out_file):
-    html = generate_line_html(cont_cn, cont_latin)
+def generate_line_img(cont_cn, cont_latin, out_file, extra_css=None):
+    html = generate_line_html(cont_cn, cont_latin, extra_css)
     s = etree.tostring(html, encoding='utf-8')
     s = str(s,'utf-8')
     # print(s)
-    # with etree.htmlfile(out_file+'_test.html', encoding='utf-8') as fp:
-    #     fp.write_doctype('<!DOCTYPE HTML>')
-    #     fp.write(html)
+    with etree.htmlfile(out_file+'_test.html', encoding='utf-8') as fp:
+        fp.write_doctype('<!DOCTYPE HTML>')
+        fp.write(html)
 
     imgkit.from_string(s, out_file, options=__imgkit_config)
 
@@ -189,19 +194,19 @@ def generate_clip_item(imgname,cont_cn, imgfullname, timebase,
     return item
 
 
-def proc_item(cont_cn, cont_latin, tm_start, tm_end, n, output_root, trk):
+def proc_item(cont_cn, cont_latin, tm_start, tm_end, n, output_root, trk, extra_css):
     print(n, cont_cn, cont_latin)
 
     img_name = f'img{n:03d}.png'
     img_fullname = f'{os.path.abspath(output_root)}/{img_name}'
-    generate_line_img(cont_cn,cont_latin.lower(),img_fullname)
+    generate_line_img(cont_cn,cont_latin.lower(),img_fullname,extra_css)
 
     item = generate_clip_item(img_name, cont_cn, img_fullname,
         __global_config['timebase'],tm_start, tm_end)
     trk.append(item)
 
 
-def main(cn_file, latin_file, output_root):
+def main(cn_file, latin_file, output_root, extra_css_file):
     if not os.path.exists(output_root):
         os.mkdir(output_root)
 
@@ -241,6 +246,12 @@ def main(cn_file, latin_file, output_root):
     fp1 = open(latin_file, 'r', encoding='utf-8', errors='ignore')
     fp2 = open(cn_file, 'r', encoding='utf-8', errors='ignore')
 
+    if extra_css_file:
+        with open(extra_css_file, encoding='utf-8', errors='ignore') as fp:
+            extra_css = fp.read()
+    else:
+        extra_css = None
+
 
     fp1_last, fp2_last = '',''
     tmmark_last = ''
@@ -260,14 +271,14 @@ def main(cn_file, latin_file, output_root):
             # continue
         if tmmark_last:
             proc_item(fp2_last, fp1_last, lrc_time_to_secs(tmmark_last), 
-            lrc_time_to_secs(tmmark), n, output_root, trk)
+            lrc_time_to_secs(tmmark), n, output_root, trk, extra_css)
             n += 1
 
         fp1_last, fp2_last = line1, line2
         tmmark_last = tmmark
     if fp1_last:
         proc_item(fp2_last, fp1_last, lrc_time_to_secs(tmmark_last), 
-            lrc_time_to_secs(tmmark_last)+10, n, output_root, trk)
+            lrc_time_to_secs(tmmark_last)+10, n, output_root, trk, extra_css)
     secs_max = lrc_time_to_secs(tmmark_last)+10
         
     fp1.close()
@@ -306,6 +317,8 @@ if __name__ == '__main__':
     parser.add_argument('--capital-red', '-r',  action='store_true', dest='capital_red', 
             help='是否将注音中的大写字母转换为红色文本')
     parser.add_argument('--center', '-c', action='store_true', help='表格是否居中')
+    parser.add_argument('--extra-css-file', '-e', type=str, default=None,
+                        help="额外引入的css样式表文件，插入到每一页面的最后")
 
     p = parser.parse_args(sys.argv[1:])
 
@@ -317,4 +330,4 @@ if __name__ == '__main__':
 
     parse_config(p)
 
-    main(p.ghenhdaih, p.triungkox, p.output_root)
+    main(p.ghenhdaih, p.triungkox, p.output_root, p.extra_css_file)
