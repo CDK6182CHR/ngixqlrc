@@ -55,8 +55,10 @@ def generate_html_table(line_cn, line_latin):
 
     # 2023.11.30: 共同循环，保留汉字行中的非文字成分
     num = max(len(prengqim), len(line_cn))
+    # print(prengqim, line_cn)
     ic = 0
     ip = 0
+    break_later = False
     while ip < len(prengqim) or ic < len(line_cn):
         tp = prengqim[ip] if ip < len(prengqim) else ''
         tc = line_cn[ic] if ic < len(line_cn) else ''
@@ -70,6 +72,9 @@ def generate_html_table(line_cn, line_latin):
             if not tc.isalnum():
                 ip -= 1
                 tp = ''
+                # 2024.06.12: 对行尾标点，结束本字处理后直接break，避免死循环
+                if ic == len(line_cn) - 1:
+                    break_later = True
         else:
             ic += 1
             continue
@@ -87,6 +92,8 @@ def generate_html_table(line_cn, line_latin):
         trp.append(tdp)
         ic += 1
         ip += 1
+        if break_later:
+            break
 
 
     return table

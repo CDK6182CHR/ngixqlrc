@@ -33,6 +33,9 @@ def generate_line_html(cont_cn, cont_latin, extra_css=None):
             continue
         elif ch == '|':
             br_after.add(i)
+        elif not ch.isalnum():
+            # 2024.06.12: 标点符号不参与计数
+            pass
         else:
             i += 1
     
@@ -129,9 +132,9 @@ def generate_line_img(cont_cn, cont_latin, out_file, extra_css=None):
     s = etree.tostring(html, encoding='utf-8')
     s = str(s,'utf-8')
     # print(s)
-    with etree.htmlfile(out_file+'_test.html', encoding='utf-8') as fp:
-        fp.write_doctype('<!DOCTYPE HTML>')
-        fp.write(html)
+    # with etree.htmlfile(out_file+'_test.html', encoding='utf-8') as fp:
+    #     fp.write_doctype('<!DOCTYPE HTML>')
+    #     fp.write(html)
 
     imgkit.from_string(s, out_file, options=__imgkit_config)
 
@@ -308,9 +311,9 @@ if __name__ == '__main__':
     parser.add_argument('ghenhdaih', help='汉字歌词文件，lrc或txt')
     parser.add_argument('output_root', help='输出的文件夹名')
     parser.add_argument('--width', dest='width', type=int, 
-            default=1500, required=False, help='输出图幅宽度')
+            default=1500, required=False, help='输出图幅宽度  默认1500')
     parser.add_argument('--height',  dest='height', type=int, 
-            default=500, required=False, help='输出图幅高度')
+            default=500, required=False, help='输出图幅高度  默认500')
     parser.add_argument('--timebase', dest='timebase', type=int, 
             default=30, required=False, help='输出序列的帧速率 fps')
     parser.add_argument('--use-md', '-m', action='store_true', dest='use_md', help='是否使用markdown解析注音文本')
